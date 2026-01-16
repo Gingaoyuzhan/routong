@@ -65,7 +65,7 @@ struct WalletView: View {
                         }
                         .font(.system(size: 14))
 
-                        Text(String(format: "%.2f", viewModel.wallet.balance))
+                        Text(String(format: "%.2f", NSDecimalNumber(decimal: viewModel.wallet.balance).doubleValue))
                             .font(.system(size: 42, weight: .black, design: .rounded))
                             .foregroundStyle(RTTheme.Colors.goldGradient)
                     }
@@ -459,9 +459,10 @@ struct TransactionRow: View {
             // 变化
             VStack(alignment: .trailing, spacing: 2) {
                 if transaction.amountChange != 0 {
-                    Text(transaction.amountChange > 0 ? "+¥\(String(format: "%.2f", transaction.amountChange))" : "-¥\(String(format: "%.2f", abs(transaction.amountChange)))")
+                    let amount = NSDecimalNumber(decimal: transaction.amountChange).doubleValue
+                    Text(amount > 0 ? "+¥\(String(format: "%.2f", amount))" : "-¥\(String(format: "%.2f", abs(amount)))")
                         .font(.system(size: 15, weight: .bold, design: .rounded))
-                        .foregroundStyle(transaction.amountChange > 0 ? RTTheme.Colors.success : RTTheme.Colors.danger)
+                        .foregroundStyle(amount > 0 ? RTTheme.Colors.success : RTTheme.Colors.danger)
                 }
 
                 if transaction.pointChange != 0 {

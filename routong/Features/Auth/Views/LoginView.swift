@@ -5,6 +5,7 @@ struct LoginView: View {
     @State private var phone = ""
     @State private var code = ""
     @State private var countdown = 0
+    @State private var countdownTimer: Timer?
     @State private var showLogo = false
     @State private var showForm = false
 
@@ -172,20 +173,27 @@ struct LoginView: View {
     }
 
     private var canSendCode: Bool {
-        phone.count == 11 && countdown == 0
+        isValidPhoneNumber(phone) && countdown == 0
     }
 
     private var canLogin: Bool {
-        phone.count == 11 && code.count >= 4
+        isValidPhoneNumber(phone) && code.count >= 4
+    }
+
+    private func isValidPhoneNumber(_ phone: String) -> Bool {
+        let pattern = "^1[3-9]\\d{9}$"
+        return phone.range(of: pattern, options: .regularExpression) != nil
     }
 
     private func sendCode() {
         countdown = 60
-        Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
+        countdownTimer?.invalidate()
+        countdownTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [self] timer in
             if countdown > 0 {
                 countdown -= 1
             } else {
                 timer.invalidate()
+                countdownTimer = nil
             }
         }
     }

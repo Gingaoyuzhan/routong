@@ -24,7 +24,7 @@ class PaymentViewModel: ObservableObject {
 
         // Mock数据
         wallet = Wallet(
-            balance: 25.00,
+            balance: Decimal(25),
             points: 150,
             reviveCards: 2,
             isPremium: false,
@@ -32,9 +32,9 @@ class PaymentViewModel: ObservableObject {
         )
 
         transactions = [
-            Transaction(id: "1", type: .recharge, amountChange: 30, pointChange: 0, description: "Apple内购充值", createdAt: Date().addingTimeInterval(-86400)),
-            Transaction(id: "2", type: .bet, amountChange: -5, pointChange: 0, description: "押注：每天晨跑", createdAt: Date().addingTimeInterval(-43200)),
-            Transaction(id: "3", type: .win, amountChange: 5, pointChange: 10, description: "挑战成功", createdAt: Date().addingTimeInterval(-3600)),
+            Transaction(id: "1", type: .recharge, amountChange: Decimal(30), pointChange: 0, description: "Apple内购充值", createdAt: Date().addingTimeInterval(-86400)),
+            Transaction(id: "2", type: .bet, amountChange: Decimal(-5), pointChange: 0, description: "押注：每天晨跑", createdAt: Date().addingTimeInterval(-43200)),
+            Transaction(id: "3", type: .win, amountChange: Decimal(5), pointChange: 10, description: "挑战成功", createdAt: Date().addingTimeInterval(-3600)),
         ]
 
         isLoading = false
@@ -55,7 +55,8 @@ class PaymentViewModel: ObservableObject {
 
         if success {
             // 充值成功，到账金额为扣除30%后的金额
-            let actualAmount = option.actualAmount
+            // TODO: 实际应用中应将收据发送到服务器验证后再增加余额
+            let actualAmount = Decimal(option.actualAmount)
             wallet.balance += actualAmount
 
             transactions.insert(
@@ -80,7 +81,7 @@ class PaymentViewModel: ObservableObject {
     }
 
     // 押注
-    func placeBet(amount: Double, taskTitle: String) async -> Bool {
+    func placeBet(amount: Decimal, taskTitle: String) async -> Bool {
         guard wallet.balance >= amount else { return false }
 
         wallet.balance -= amount
@@ -99,7 +100,7 @@ class PaymentViewModel: ObservableObject {
     }
 
     // 挑战成功 - 返还押金 + 奖励积分
-    func challengeSuccess(amount: Double, taskTitle: String) {
+    func challengeSuccess(amount: Decimal, taskTitle: String) {
         wallet.balance += amount
         wallet.points += 10  // 奖励10积分
 
@@ -117,7 +118,7 @@ class PaymentViewModel: ObservableObject {
     }
 
     // 挑战失败 - 押金已扣除，可用复活卡
-    func challengeFailed(amount: Double, taskTitle: String, useReviveCard: Bool) -> Bool {
+    func challengeFailed(amount: Decimal, taskTitle: String, useReviveCard: Bool) -> Bool {
         if useReviveCard && wallet.reviveCards > 0 {
             // 使用复活卡，返还押金
             wallet.reviveCards -= 1
@@ -166,7 +167,7 @@ class PaymentViewModel: ObservableObject {
                 id: UUID().uuidString,
                 type: .shopBuy,
                 amountChange: item.pointsPrice != nil ? 0 : -item.price,
-                pointChange: item.pointsPrice != nil ? -(item.pointsPrice!) : 0,
+                pointChange: item.pointsPrice.map { -$0 } ?? 0,
                 description: "购买：\(item.name)",
                 createdAt: Date()
             ),

@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - 钱包数据
 struct Wallet: Codable {
-    var balance: Double     // 余额（元）
+    var balance: Decimal     // 余额（元）
     var points: Int         // 积分（成功奖励，用来换皮肤）
     var reviveCards: Int    // 复活卡数量
     var isPremium: Bool     // 是否解锁高级功能
@@ -45,7 +45,7 @@ struct ShopItem: Identifiable {
     let description: String
     let icon: String
     let type: ItemType
-    let price: Double       // 价格（元）
+    let price: Decimal       // 价格（元）
     let pointsPrice: Int?   // 积分价格（可选）
 
     enum ItemType: String {
@@ -73,7 +73,7 @@ struct ShopItem: Identifiable {
 struct Transaction: Codable, Identifiable {
     let id: String
     let type: TransactionType
-    let amountChange: Double // 余额变化（正数增加，负数减少）
+    let amountChange: Decimal // 余额变化（正数增加，负数减少）
     let pointChange: Int     // 积分变化
     let description: String
     let createdAt: Date

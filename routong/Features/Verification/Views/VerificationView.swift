@@ -151,18 +151,16 @@ struct VerificationView: View {
 
     private func submit() {
         isSubmitting = true
-        // TODO: 上传图片并调用AI验证
         Task {
+            // TODO: 实现实际的验证逻辑
+            // 1. 上传图片到服务器
+            // 2. 调用AI验证接口
+            // 3. 根据返回结果显示成功或失败
             try? await Task.sleep(nanoseconds: 2_000_000_000)
             isSubmitting = false
 
-            // 模拟验证结果 (随机成功/失败用于演示)
-            let success = Bool.random()
-            if success {
-                showSuccess = true
-            } else {
-                showFailure = true
-            }
+            // 临时：模拟验证成功（实际应用中应替换为真实验证结果）
+            showSuccess = true
         }
     }
 }

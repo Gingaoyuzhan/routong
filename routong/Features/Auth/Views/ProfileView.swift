@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
+    @StateObject private var contractVM = ContractViewModel()
     @State private var showSettings = false
     @State private var showAbout = false
     @State private var showFeedback = false
@@ -59,6 +60,9 @@ struct ProfileView: View {
             .sheet(isPresented: $showEditProfile) {
                 EditProfileView(authViewModel: authViewModel)
             }
+            .task {
+                await contractVM.loadContracts()
+            }
         }
     }
 
@@ -100,10 +104,14 @@ struct ProfileView: View {
 
     // MARK: - Stats Section
     private var statsSection: some View {
-        HStack(spacing: RTTheme.Spacing.md) {
-            statCard(title: "完成契约", value: "12", icon: "checkmark.circle.fill", color: RTTheme.Colors.success)
-            statCard(title: "社死次数", value: "3", icon: "face.dashed", color: RTTheme.Colors.danger)
-            statCard(title: "进行中", value: "2", icon: "clock.fill", color: RTTheme.Colors.primary)
+        let completed = contractVM.contracts.filter { $0.status == .completed }.count
+        let failed = contractVM.contracts.filter { $0.status == .failed || $0.status == .punished }.count
+        let active = contractVM.contracts.filter { $0.status == .active }.count
+
+        return HStack(spacing: RTTheme.Spacing.md) {
+            statCard(title: "完成契约", value: "\(completed)", icon: "checkmark.circle.fill", color: RTTheme.Colors.success)
+            statCard(title: "社死次数", value: "\(failed)", icon: "face.dashed", color: RTTheme.Colors.danger)
+            statCard(title: "进行中", value: "\(active)", icon: "clock.fill", color: RTTheme.Colors.primary)
         }
     }
 
@@ -172,6 +180,7 @@ struct ProfileView: View {
 // MARK: - Settings View
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @State private var pushNotificationEnabled = true
 
     var body: some View {
         NavigationStack {
@@ -180,7 +189,7 @@ struct SettingsView: View {
 
                 List {
                     Section {
-                        settingRow(icon: "bell.badge", title: "推送通知", hasToggle: true)
+                        settingRow(icon: "bell.badge", title: "推送通知", toggle: $pushNotificationEnabled)
                         settingRow(icon: "moon.fill", title: "深色模式", subtitle: "跟随系统")
                     }
 
@@ -210,7 +219,7 @@ struct SettingsView: View {
         }
     }
 
-    private func settingRow(icon: String, title: String, subtitle: String? = nil, hasToggle: Bool = false) -> some View {
+    private func settingRow(icon: String, title: String, subtitle: String? = nil, toggle: Binding<Bool>? = nil) -> some View {
         HStack {
             Image(systemName: icon)
                 .foregroundStyle(RTTheme.Colors.primary)
@@ -227,8 +236,8 @@ struct SettingsView: View {
                     .foregroundStyle(RTTheme.Colors.textTertiary)
             }
 
-            if hasToggle {
-                Toggle("", isOn: .constant(true))
+            if let toggle = toggle {
+                Toggle("", isOn: toggle)
                     .tint(RTTheme.Colors.primary)
             }
         }

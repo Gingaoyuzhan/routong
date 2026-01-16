@@ -111,15 +111,26 @@ class StoreKitManager: ObservableObject {
 
     /// 监听交易更新
     private func listenForTransactions() -> Task<Void, Error> {
-        return Task.detached {
+        return Task.detached { [weak self] in
             for await result in Transaction.updates {
                 do {
-                    let transaction = try await self.checkVerified(result)
+                    guard let self = self else { return }
+                    let transaction = try self.checkVerifiedSync(result)
                     await transaction.finish()
                 } catch {
                     print("Transaction verification failed: \(error)")
                 }
             }
+        }
+    }
+
+    /// 同步验证交易（用于detached task）
+    private nonisolated func checkVerifiedSync<T>(_ result: VerificationResult<T>) throws -> T {
+        switch result {
+        case .unverified:
+            throw StoreError.failedVerification
+        case .verified(let safe):
+            return safe
         }
     }
 

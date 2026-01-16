@@ -358,9 +358,14 @@ struct CreateContractView: View {
         switch currentStep {
         case 0: return !title.isEmpty
         case 1: return pledgeAmount >= 50
-        case 2: return shamePhone.count == 11
+        case 2: return isValidPhoneNumber(shamePhone)
         default: return false
         }
+    }
+
+    private func isValidPhoneNumber(_ phone: String) -> Bool {
+        let pattern = "^1[3-9]\\d{9}$"
+        return phone.range(of: pattern, options: .regularExpression) != nil
     }
 
     private func createContract() {
